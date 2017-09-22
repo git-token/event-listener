@@ -1,6 +1,6 @@
 {
   "name": "gittoken-event-listener",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "GitToken Contract Event Listener",
   "main": "./dist/index.js",
   "scripts": {

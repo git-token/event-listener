@@ -32,6 +32,8 @@ function broadcastEvent(details) {
     _bluebird2.default.resolve((0, _keys2.default)(_this.connections)).map(function (id) {
       if (!_this.connections[id].destroyed) {
         _this.connections[id].write((0, _stringify2.default)(details));
+      } else {
+        delete _this.connections[id];
       }
 
       return null;

@@ -10,8 +10,10 @@ export default function broadcastEvent(details) {
     Promise.resolve(Object.keys(this.connections)).map((id) => {
       if (!this.connections[id].destroyed) {
         this.connections[id].write(JSON.stringify(details))
+      } else {
+        delete this.connections[id]
       }
-      
+
       return null;
     }).then(() => {
       resolve(true)
