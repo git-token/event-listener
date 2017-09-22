@@ -1,30 +1,37 @@
 import net from 'net'
+import EventEmitter from 'events'
 
-export default class GitTokenEventWatcherClient {
+export default class GitTokenEventWatcherClient extends EventEmitter  {
   constructor({ watcherIpcPath }) {
+    super()
     this.watcherIpcPath = watcherIpcPath
     this.connect()
   }
 
   connect() {
-    this.watcher = net.connect(this.watcherIpcPath)
-    this.watcher.on('connect', () => {
+    this.socket = net.connect(this.watcherIpcPath)
+    this.socket.on('connect', () => {
       console.log('Connected to GitToken Contract Event Watcher')
     })
 
-    this.watcher.on('error', () => {
+    this.socket.on('error', () => {
       console.log('Connection Error to GitToken Contract Event Watcher.')
       this.reconnect()
     })
 
-    this.watcher.on('end', () => {
+    this.socket.on('data', (_msg) => {
+      const msg = JSON.parse(_msg.toString('utf8'))
+      console.log('Received msg: ', msg)
+    })
+
+    this.socket.on('end', () => {
       console.log('Connection to GitToken Contract Event Watcher Closed.')
       this.reconnect()
     })
   }
 
   reconnect() {
-    console.log('Attempting to Reconnect in 15 seconds...')
+    console.log('Attempting to Reconnect GitToken Event Watcher in 15 seconds...')
     setTimeout(() => {
       console.log('Attempting to Reconnect.')
       this.connect()

@@ -48,9 +48,33 @@ function insertIntoContributions(_ref) {
   return new _bluebird2.default(function (resolve, reject) {
     _this.mysql.query("\n      INSERT INTO contributions (\n        txHash,\n        contributor,\n        username,\n        value,\n        reservedValue,\n        date,\n        rewardType,\n        organization\n      ) VALUES (\n        \"" + transactionHash + "\",\n        \"" + contributor + "\",\n        \"" + username + "\",\n        " + value.toNumber() + ",\n        " + reservedValue.toNumber() + ",\n        " + date.toNumber() + ",\n        \"" + rewardType + "\",\n        \"" + organization + "\"\n      );\n    ", function (error, result) {
       if (error) {
-        console.log(error);
+        if (error.message.match(RegExp('ER_DUP_ENTRY'))) {
+          resolve({
+            transactionHash: transactionHash,
+            contributor: contributor,
+            username: username,
+            value: value,
+            reservedValue: reservedValue,
+            date: date,
+            rewardType: rewardType,
+            reservedType: reservedType,
+            organization: organization
+          });
+        } else {
+          reject(error);
+        }
       }
-      resolve(result);
+      resolve({
+        transactionHash: transactionHash,
+        contributor: contributor,
+        username: username,
+        value: value,
+        reservedValue: reservedValue,
+        date: date,
+        rewardType: rewardType,
+        reservedType: reservedType,
+        organization: organization
+      });
     });
   });
 }

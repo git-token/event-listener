@@ -45,8 +45,34 @@ export default function insertIntoContributions({
         "${organization}"
       );
     `, (error, result) => {
-      if (error) { console.log(error) }
-      resolve(result)
+      if (error) {
+        if (error.message.match(RegExp('ER_DUP_ENTRY'))) {
+          resolve({
+            transactionHash,
+            contributor,
+            username,
+            value,
+            reservedValue,
+            date,
+            rewardType,
+            reservedType,
+            organization
+          })
+        } else {
+          reject(error)
+        }
+      }
+      resolve({
+        transactionHash,
+        contributor,
+        username,
+        value,
+        reservedValue,
+        date,
+        rewardType,
+        reservedType,
+        organization
+      })
     })
   })
 }

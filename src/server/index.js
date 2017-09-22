@@ -1,10 +1,11 @@
-import Promise from 'bluebird'
-import EventEmitter from 'events'
-import net from 'net'
+import Promise, { promisifyAll } from 'bluebird'
 import Web3 from 'web3'
 import mysql from 'mysql'
 
-import handleEvent from './handleEvent'
+import {
+  handleEvent,
+  broadcastEvent
+} from './utils/index'
 
 import {
   insertIntoContributions,
@@ -16,7 +17,9 @@ const {
   unlinked_binary
 } = require('gittoken-contracts/build/contracts/GitToken.json')
 
-export default class GitTokenContractEventListener extends EventEmitter {
+const net = promisifyAll(require('net'))
+
+export default class GitTokenContractEventListener{
   constructor({
     mysqlHost,
     mysqlUser,
@@ -25,15 +28,17 @@ export default class GitTokenContractEventListener extends EventEmitter {
     ethereumIpcPath,
     watcherIpcPath
   }) {
-    super()
     this.ethereumIpcPath = ethereumIpcPath
 
     this.contracts = {}
     this.contractEvents = {}
+    this.connections = {}
 
     this.handleEvent                    = handleEvent.bind(this)
+    this.broadcastEvent                 = broadcastEvent.bind(this)
     this.insertIntoContributions        = insertIntoContributions.bind(this)
     this.selectOrganizationFromRegistry = selectOrganizationFromRegistry.bind(this)
+
 
     this.web3 = new Web3(new Web3.providers.IpcProvider(ethereumIpcPath, net));
 
@@ -46,15 +51,16 @@ export default class GitTokenContractEventListener extends EventEmitter {
     })
 
     this.server = net.createServer((socket) => {
-      this.socket = socket;
-      this.socket.on('data', (msg) => {
-        console.log('msg', msg)
-        const { event, data } = JSON.parse(msg)
+      const id = new Date().getTime()
+      this.connections[id] = socket
+      this.connections[id].on('data', (msg) => {
+        const { event, data } = JSON.parse(msg.toString('utf8'))
         switch(event) {
           case 'watch_token':
             this.watchToken({ ...data })
+            break;
           default:
-            this.socket.write(JSON.stringify({
+            this.connections[id].write(JSON.stringify({
               event: 'error',
               message: `Unknown event, ${event}`
             }))
@@ -68,18 +74,13 @@ export default class GitTokenContractEventListener extends EventEmitter {
 
   }
 
-  watchToken({ organization, token }) {
+  watchToken({ organization, token, socket }) {
     this.contracts[token] = this.web3.eth.contract(abi).at(token)
     this.contractEvents[token] = this.contracts[token].allEvents({ fromBlock: 0, toBlock: 'latest' });
     this.contractEvents[token].watch((error, result) => {
-      this.handleEvent({
-          data: result,
-          organization
-      }).then((data) => {
-        console.log('data', data)
-      }).catch((error) => {
-        console.log('error', error)
-      })
+      this.handleEvent({ data: result, organization })
+        .then((data) => { return this.broadcastEvent({ event: data }) })
+        .catch((error) => { console.log('error', error) })
     })
   }
 

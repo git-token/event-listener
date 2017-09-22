@@ -33,16 +33,23 @@ function handleEvent(_ref) {
         args = data.args,
         transactionHash = data.transactionHash;
 
-    console.log('event', event);
-    switch (event) {
-      case 'Contribution':
-        resolve(_this.insertIntoContributions((0, _extends3.default)({}, args, {
-          transactionHash: transactionHash,
-          organization: organization
-        })));
-        break;
-      default:
-        resolve(data);
+    try {
+      switch (event) {
+        case 'Contribution':
+          _this.insertIntoContributions((0, _extends3.default)({}, args, {
+            transactionHash: transactionHash,
+            organization: organization
+          })).then(function (result) {
+            resolve({ event: event, data: result });
+          }).catch(function (error) {
+            reject(error);
+          });
+          break;
+        default:
+          resolve(data);
+      }
+    } catch (error) {
+      reject(error);
     }
   });
 }
