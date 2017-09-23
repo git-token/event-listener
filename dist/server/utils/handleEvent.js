@@ -36,10 +36,7 @@ function handleEvent(_ref) {
     try {
       switch (event) {
         case 'Contribution':
-          _this.insertIntoContributions((0, _extends3.default)({}, args, {
-            transactionHash: transactionHash,
-            organization: organization
-          })).then(function (result) {
+          _this.insertIntoContributions((0, _extends3.default)({}, args, { transactionHash: transactionHash, organization: organization })).then(function (result) {
             resolve({ event: event, data: result });
           }).catch(function (error) {
             reject(error);

@@ -79,7 +79,7 @@ export default class GitTokenContractEventListener{
     this.contractEvents[token] = this.contracts[token].allEvents({ fromBlock: 0, toBlock: 'latest' });
     this.contractEvents[token].watch((error, result) => {
       this.handleEvent({ data: result, organization })
-        .then((data) => { return this.broadcastEvent({ event: data }) })
+        .then((details) => { return this.broadcastEvent(details) })
         .catch((error) => { console.log('error', error) })
     })
   }

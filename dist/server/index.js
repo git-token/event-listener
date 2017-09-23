@@ -115,8 +115,8 @@ var GitTokenContractEventListener = function () {
       this.contracts[token] = this.web3.eth.contract(abi).at(token);
       this.contractEvents[token] = this.contracts[token].allEvents({ fromBlock: 0, toBlock: 'latest' });
       this.contractEvents[token].watch(function (error, result) {
-        _this2.handleEvent({ data: result, organization: organization }).then(function (data) {
-          return _this2.broadcastEvent({ event: data });
+        _this2.handleEvent({ data: result, organization: organization }).then(function (details) {
+          return _this2.broadcastEvent(details);
         }).catch(function (error) {
           console.log('error', error);
         });
