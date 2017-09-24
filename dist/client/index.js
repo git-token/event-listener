@@ -63,10 +63,11 @@ var GitTokenEventWatcherClient = function (_EventEmitter) {
         _this2.reconnect();
       });
 
-      this.socket.on('data', function (_msg) {
-        var msg = JSON.parse(_msg.toString('utf8'));
-        console.log('Received msg: ', msg);
-      });
+      // Implement this as a custom handled method in the Socket Server
+      // this.socket.on('data', (_msg) => {
+      //   const msg = JSON.parse(_msg.toString('utf8'))
+      //   console.log('Received msg: ', msg)
+      // })
 
       this.socket.on('end', function () {
         console.log('Connection to GitToken Contract Event Watcher Closed.');
