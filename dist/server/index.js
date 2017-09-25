@@ -82,16 +82,16 @@ var GitTokenContractEventListener = function () {
       _this.connections[id] = socket;
       _this.connections[id].on('data', function (msg) {
         var _JSON$parse = JSON.parse(msg.toString('utf8')),
-            event = _JSON$parse.event,
+            type = _JSON$parse.type,
             data = _JSON$parse.data;
 
-        switch (event) {
-          case 'watch_token':
+        switch (type) {
+          case 'WATCH_TOKEN':
             _this.watchToken((0, _extends3.default)({}, data));
             break;
           default:
             _this.connections[id].write((0, _stringify2.default)({
-              event: 'error',
+              type: 'error',
               message: 'Unknown event, ' + event
             }));
         }

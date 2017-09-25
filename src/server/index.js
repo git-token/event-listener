@@ -54,14 +54,14 @@ export default class GitTokenContractEventListener{
       const id = new Date().getTime()
       this.connections[id] = socket
       this.connections[id].on('data', (msg) => {
-        const { event, data } = JSON.parse(msg.toString('utf8'))
-        switch(event) {
-          case 'watch_token':
+        const { type, data } = JSON.parse(msg.toString('utf8'))
+        switch(type) {
+          case 'WATCH_TOKEN':
             this.watchToken({ ...data })
             break;
           default:
             this.connections[id].write(JSON.stringify({
-              event: 'error',
+              type: 'error',
               message: `Unknown event, ${event}`
             }))
         }
