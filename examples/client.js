@@ -6,7 +6,7 @@ const client = new Client(config)
 
 
 Promise.resolve().then(() => {
-  client.socket.write(JSON.stringify({
+  client.contractEventListener.write(JSON.stringify({
     event: 'watch_token',
     data: {
       organization: 'git-token',
@@ -15,7 +15,7 @@ Promise.resolve().then(() => {
   }))
   return Promise.delay(1000)
 }).then(() => {
-  client.socket.write(JSON.stringify({
+  client.contractEventListener.write(JSON.stringify({
     event: 'watch_token',
     data: {
       organization: 'economic-network',

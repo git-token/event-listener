@@ -9,23 +9,23 @@ export default class GitTokenEventWatcherClient extends EventEmitter  {
   }
 
   connect() {
-    this.socket = net.connect(this.watcherIpcPath)
-    this.socket.on('connect', () => {
+    this.contractEventListener = net.connect(this.watcherIpcPath)
+    this.contractEventListener.on('connect', () => {
       console.log('Connected to GitToken Contract Event Watcher')
     })
 
-    this.socket.on('error', () => {
+    this.contractEventListener.on('error', () => {
       console.log('Connection Error to GitToken Contract Event Watcher.')
       this.reconnect()
     })
 
     // Implement this as a custom handled method in the Socket Server
-    // this.socket.on('data', (_msg) => {
+    // this.contractEventListener.on('data', (_msg) => {
     //   const msg = JSON.parse(_msg.toString('utf8'))
     //   console.log('Received msg: ', msg)
     // })
 
-    this.socket.on('end', () => {
+    this.contractEventListener.on('end', () => {
       console.log('Connection to GitToken Contract Event Watcher Closed.')
       this.reconnect()
     })
