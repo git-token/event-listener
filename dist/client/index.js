@@ -53,23 +53,23 @@ var GitTokenEventWatcherClient = function (_EventEmitter) {
     value: function connect() {
       var _this2 = this;
 
-      this.contractEventListener = _net2.default.connect(this.watcherIpcPath);
-      this.contractEventListener.on('connect', function () {
+      this.eventListener = _net2.default.connect(this.watcherIpcPath);
+      this.eventListener.on('connect', function () {
         console.log('Connected to GitToken Contract Event Watcher');
       });
 
-      this.contractEventListener.on('error', function () {
+      this.eventListener.on('error', function () {
         console.log('Connection Error to GitToken Contract Event Watcher.');
         _this2.reconnect();
       });
 
       // Implement this as a custom handled method in the Socket Server
-      // this.contractEventListener.on('data', (_msg) => {
+      // this.eventListener.on('data', (_msg) => {
       //   const msg = JSON.parse(_msg.toString('utf8'))
       //   console.log('Received msg: ', msg)
       // })
 
-      this.contractEventListener.on('end', function () {
+      this.eventListener.on('end', function () {
         console.log('Connection to GitToken Contract Event Watcher Closed.');
         _this2.reconnect();
       });
