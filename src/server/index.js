@@ -25,6 +25,7 @@ export default class GitTokenContractEventListener{
     mysqlUser,
     mysqlRootPassword,
     mysqlDatabase,
+    web3Provider,
     ethereumIpcPath,
     watcherIpcPath
   }) {
@@ -39,8 +40,12 @@ export default class GitTokenContractEventListener{
     this.insertIntoContributions        = insertIntoContributions.bind(this)
     this.selectOrganizationFromRegistry = selectOrganizationFromRegistry.bind(this)
 
+    if (web3Provider) {
+      this.web3 = new Web3(new Web3.providers.HttpProvider(web3Provider));
+    } else {
+      this.web3 = new Web3(new Web3.providers.IpcProvider(ethereumIpcPath, net));
+    }
 
-    this.web3 = new Web3(new Web3.providers.IpcProvider(ethereumIpcPath, net));
 
     // Instantiate MySql Connection
     this.mysql = mysql.createConnection({

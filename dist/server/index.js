@@ -52,6 +52,7 @@ var GitTokenContractEventListener = function () {
         mysqlUser = _ref.mysqlUser,
         mysqlRootPassword = _ref.mysqlRootPassword,
         mysqlDatabase = _ref.mysqlDatabase,
+        web3Provider = _ref.web3Provider,
         ethereumIpcPath = _ref.ethereumIpcPath,
         watcherIpcPath = _ref.watcherIpcPath;
     (0, _classCallCheck3.default)(this, GitTokenContractEventListener);
@@ -67,7 +68,11 @@ var GitTokenContractEventListener = function () {
     this.insertIntoContributions = _index2.insertIntoContributions.bind(this);
     this.selectOrganizationFromRegistry = _index2.selectOrganizationFromRegistry.bind(this);
 
-    this.web3 = new _web2.default(new _web2.default.providers.IpcProvider(ethereumIpcPath, net));
+    if (web3Provider) {
+      this.web3 = new _web2.default(new _web2.default.providers.HttpProvider(web3Provider));
+    } else {
+      this.web3 = new _web2.default(new _web2.default.providers.IpcProvider(ethereumIpcPath, net));
+    }
 
     // Instantiate MySql Connection
     this.mysql = _mysql2.default.createConnection({
