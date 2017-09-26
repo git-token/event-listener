@@ -1,12 +1,12 @@
 {
   "name": "gittoken-event-listener",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "GitToken Contract Event Listener",
   "main": "./dist/index.js",
   "scripts": {
     "test": "mocha",
     "build": "babel ./src/ --out-dir ./dist/ --plugins transform-runtime",
-    "start": "node examples/manager.js"
+    "start": "node examples/server.js"
   },
   "keywords": [
     "GitToken",
