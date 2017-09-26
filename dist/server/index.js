@@ -98,7 +98,7 @@ var GitTokenContractEventListener = function () {
             _this.connections[id].write((0, _stringify2.default)({
               type: 'error',
               message: 'Unknown event, ' + event
-            }));
+            }) + '\n');
         }
       });
     });

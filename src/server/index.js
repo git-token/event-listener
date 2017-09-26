@@ -65,10 +65,10 @@ export default class GitTokenContractEventListener{
             this.watchToken({ ...data })
             break;
           default:
-            this.connections[id].write(JSON.stringify({
+            this.connections[id].write(`${JSON.stringify({
               type: 'error',
               message: `Unknown event, ${event}`
-            }))
+            })}\n`)
         }
       })
     })
