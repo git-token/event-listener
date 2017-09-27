@@ -42,6 +42,8 @@ var _index2 = require('./sql/index');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var fs = (0, _bluebird.promisifyAll)(require('fs'));
+
 var _require = require('gittoken-contracts/build/contracts/GitToken.json'),
     abi = _require.abi,
     unlinked_binary = _require.unlinked_binary;
@@ -62,6 +64,7 @@ var GitTokenContractEventListener = function () {
     (0, _classCallCheck3.default)(this, GitTokenContractEventListener);
 
     this.ethereumIpcPath = ethereumIpcPath;
+    this.watcherIpcPath = watcherIpcPath;
 
     this.contracts = {};
     this.contractEvents = {};
@@ -89,10 +92,12 @@ var GitTokenContractEventListener = function () {
     this.server = net.createServer(function (socket) {
       var id = new Date().getTime();
       _this.connections[id] = socket;
-      _this.connections[id].pipe((0, _split2.default)(JSON.parse)).on('data', function (msg) {
-        console.log('Incoming Message: ' + msg + '\n\n\n');
-        var type = msg.type,
-            data = msg.data;
+      _this.connections[id].on('data', function (msg) {
+        console.log('Incoming Message: ' + msg.toString('utf8') + '\n\n\n');
+
+        var _JSON$parse = JSON.parse(msg.toString('utf8')),
+            type = _JSON$parse.type,
+            data = _JSON$parse.data;
 
         switch (type) {
           case 'WATCH_TOKEN':
@@ -101,21 +106,35 @@ var GitTokenContractEventListener = function () {
           default:
             _this.connections[id].write((0, _stringify2.default)({
               type: 'error',
-              message: 'Unknown event, ' + event
+              message: 'Unknown event, ' + type
             }) + '\n');
         }
       });
     });
 
-    this.server.listen({ path: watcherIpcPath }, function () {
-      console.log('GitToken Contract Event Listener Listening at path: ' + watcherIpcPath + '\n\n\n');
+    // Remove the existing IPC path if exists, then listen for events
+    fs.unlinkAsync(this.watcherIpcPath).then(function () {
+      _this.listen();
+    }).catch(function (error) {
+      if (error.code == 'ENOENT') {
+        _this.listen();
+      }
     });
   }
 
   (0, _createClass3.default)(GitTokenContractEventListener, [{
+    key: 'listen',
+    value: function listen() {
+      var _this2 = this;
+
+      this.server.listen({ path: this.watcherIpcPath }, function () {
+        console.log('GitToken Contract Event Listener Listening at path: ' + _this2.watcherIpcPath + '\n\n\n');
+      });
+    }
+  }, {
     key: 'watchToken',
     value: function watchToken(_ref2) {
-      var _this2 = this;
+      var _this3 = this;
 
       var organization = _ref2.organization,
           token = _ref2.token,
@@ -124,8 +143,8 @@ var GitTokenContractEventListener = function () {
       this.contracts[token] = this.web3.eth.contract(abi).at(token);
       this.contractEvents[token] = this.contracts[token].allEvents({ fromBlock: 0, toBlock: 'latest' });
       this.contractEvents[token].watch(function (error, result) {
-        _this2.handleEvent({ data: result, organization: organization }).then(function (details) {
-          return _this2.broadcastEvent(details);
+        _this3.handleEvent({ data: result, organization: organization }).then(function (details) {
+          return _this3.broadcastEvent(details);
         }).catch(function (error) {
           console.log('error', error);
         });

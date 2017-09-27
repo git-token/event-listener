@@ -3,6 +3,8 @@ import Web3 from 'web3'
 import mysql from 'mysql'
 import split from 'split'
 
+const fs = promisifyAll(require('fs'))
+
 import {
   handleEvent,
   broadcastEvent
@@ -31,10 +33,12 @@ export default class GitTokenContractEventListener{
     watcherIpcPath
   }) {
     this.ethereumIpcPath = ethereumIpcPath
+    this.watcherIpcPath  = watcherIpcPath
 
     this.contracts = {}
     this.contractEvents = {}
     this.connections = {}
+
 
     this.handleEvent                    = handleEvent.bind(this)
     this.broadcastEvent                 = broadcastEvent.bind(this)
@@ -59,9 +63,9 @@ export default class GitTokenContractEventListener{
     this.server = net.createServer((socket) => {
       const id = new Date().getTime()
       this.connections[id] = socket
-      this.connections[id].pipe(split(JSON.parse)).on('data', (msg) => {
-        console.log(`Incoming Message: ${msg}\n\n\n`)
-        const { type, data } = msg
+      this.connections[id].on('data', (msg) => {
+        console.log(`Incoming Message: ${msg.toString('utf8')}\n\n\n`)
+        const { type, data } = JSON.parse(msg.toString('utf8'))
         switch(type) {
           case 'WATCH_TOKEN':
             this.watchToken({ ...data })
@@ -69,16 +73,27 @@ export default class GitTokenContractEventListener{
           default:
             this.connections[id].write(`${JSON.stringify({
               type: 'error',
-              message: `Unknown event, ${event}`
+              message: `Unknown event, ${type}`
             })}\n`)
         }
       })
     })
 
-    this.server.listen({ path: watcherIpcPath}, () => {
-      console.log(`GitToken Contract Event Listener Listening at path: ${watcherIpcPath}\n\n\n`)
+    // Remove the existing IPC path if exists, then listen for events
+    fs.unlinkAsync(this.watcherIpcPath).then(() => {
+      this.listen()
+    }).catch((error) => {
+      if (error.code == 'ENOENT') {
+        this.listen()
+      }
     })
 
+  }
+
+  listen() {
+    this.server.listen({ path: this.watcherIpcPath }, () => {
+      console.log(`GitToken Contract Event Listener Listening at path: ${this.watcherIpcPath}\n\n\n`)
+    })
   }
 
   watchToken({ organization, token, socket }) {
