@@ -1,6 +1,6 @@
 {
   "name": "gittoken-event-listener",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "GitToken Contract Event Listener",
   "main": "./dist/index.js",
   "scripts": {
@@ -37,6 +37,7 @@
     "gittoken-contracts": "0.0.38",
     "gittoken-signer": "0.0.34",
     "mysql": "^2.14.1",
+    "split": "^1.0.1",
     "web3": "^0.20.0"
   }
 }

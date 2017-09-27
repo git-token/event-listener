@@ -32,6 +32,10 @@ var _mysql = require('mysql');
 
 var _mysql2 = _interopRequireDefault(_mysql);
 
+var _split = require('split');
+
+var _split2 = _interopRequireDefault(_split);
+
 var _index = require('./utils/index');
 
 var _index2 = require('./sql/index');
@@ -85,10 +89,10 @@ var GitTokenContractEventListener = function () {
     this.server = net.createServer(function (socket) {
       var id = new Date().getTime();
       _this.connections[id] = socket;
-      _this.connections[id].on('data', function (msg) {
-        var _JSON$parse = JSON.parse(msg.toString('utf8')),
-            type = _JSON$parse.type,
-            data = _JSON$parse.data;
+      _this.connections[id].pipe((0, _split2.default)(JSON.parse)).on('data', function (msg) {
+        console.log('Incoming Message: ' + msg + '\n\n\n');
+        var type = msg.type,
+            data = msg.data;
 
         switch (type) {
           case 'WATCH_TOKEN':
@@ -104,7 +108,7 @@ var GitTokenContractEventListener = function () {
     });
 
     this.server.listen({ path: watcherIpcPath }, function () {
-      console.log('GitToken Contract Event Listener Listening at path: ', watcherIpcPath);
+      console.log('GitToken Contract Event Listener Listening at path: ' + watcherIpcPath + '\n\n\n');
     });
   }
 

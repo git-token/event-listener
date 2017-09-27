@@ -1,6 +1,7 @@
 import Promise, { promisifyAll } from 'bluebird'
 import Web3 from 'web3'
 import mysql from 'mysql'
+import split from 'split'
 
 import {
   handleEvent,
@@ -58,8 +59,9 @@ export default class GitTokenContractEventListener{
     this.server = net.createServer((socket) => {
       const id = new Date().getTime()
       this.connections[id] = socket
-      this.connections[id].on('data', (msg) => {
-        const { type, data } = JSON.parse(msg.toString('utf8'))
+      this.connections[id].pipe(split(JSON.parse)).on('data', (msg) => {
+        console.log(`Incoming Message: ${msg}\n\n\n`)
+        const { type, data } = msg
         switch(type) {
           case 'WATCH_TOKEN':
             this.watchToken({ ...data })
@@ -74,7 +76,7 @@ export default class GitTokenContractEventListener{
     })
 
     this.server.listen({ path: watcherIpcPath}, () => {
-      console.log('GitToken Contract Event Listener Listening at path: ', watcherIpcPath)
+      console.log(`GitToken Contract Event Listener Listening at path: ${watcherIpcPath}\n\n\n`)
     })
 
   }
